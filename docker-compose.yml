@@ -1,0 +1,40 @@
+version: "3.9"
+
+volumes:
+    tango_data: {}
+    staticfiles:
+
+services:
+
+  postgres:
+    image: postgres:10-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - tango_data:/var/lib/postgresql/data
+    env_file: .env
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+    command: /start.sh
+    entrypoint: /entrypoint.sh
+    restart: on-failure
+    env_file: .env
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./backend/media/:/media/
+      - ./backend/staticfiles/:/staticfiles/
