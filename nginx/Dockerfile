@@ -1,14 +1,19 @@
-FROM node:lts-alpine3.12 as build
+# Stage 1 - build frontend app
+FROM node:12-alpine as build-deps
 
-WORKDIR /frontend
-COPY ./frontend/package.json ./
-COPY ./frontend/yarn.lock ./
-RUN yarn install
-COPY ./frontend/ ./
-RUN yarn build
+WORKDIR /app/
 
+COPY frontend/package.json frontend/package-lock.json /app/
+RUN npm install
 
-FROM nginx:1.18.0-alpine
+COPY frontend /app/
+COPY .env /app/.env
+RUN npm run build
 
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /frontend/build /usr/share/nginx/html
+# Stage 2 - nginx & frontend dist
+FROM nginx:alpine
+
+COPY nginx/dev.conf /etc/nginx/nginx.conf
+COPY --from=build-deps /app/dist/ /dist/
+
+CMD ["nginx", "-g", "daemon off;"]

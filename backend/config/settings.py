@@ -1,5 +1,5 @@
 """
-Django settings for Tango project.
+Django settings for Panel_Mieszkanca project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/dev/topics/settings/

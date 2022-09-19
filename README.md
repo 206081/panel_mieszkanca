@@ -3,4 +3,4 @@ Firstly create environment variables file for Docker - .env. Use example.env to 
 
 Run and build docker container
 ### `docker-compose up -d --build`
-Now you will have app on port 80.
+Now you will have app on port 8000.
