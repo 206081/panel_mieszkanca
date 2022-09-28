@@ -9,9 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.users.models import User
-from apps.users.serializers import UserSerializer, UserWriteSerializer
+from apps.users.serializers import UserSerializer, UserWriteSerializer, TokenAccessObtainSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -103,3 +104,7 @@ class LogoutViewSet(APIView):
         token = RefreshToken(token=refresh_token)
         token.blacklist()
         return Response({"status": "Token Blacklisted."})
+
+
+class TokenAccessObtain(TokenObtainPairView):
+    serializer_class = TokenAccessObtainSerializer

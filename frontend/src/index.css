@@ -1,3 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px;
+    color: #fff;
+}
+
 body {
     min-height: 100vh;
     background-color: dodgerblue;
@@ -8,7 +22,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100vh; 
   padding: 1rem 0.5rem;
 }
 
@@ -54,6 +68,10 @@ button {
   padding: 0.5rem;
 }
 
+li {
+    list-style-type: none;
+}
+
 .instructions {
     font-size: 0.75rem;
     border-radius: 0.5rem;
@@ -97,4 +115,11 @@ button {
 
 .line {
     display: inline-block;
+}
+
+.flexGrow {
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
 }

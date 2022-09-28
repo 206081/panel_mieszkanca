@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.users.models import User
 
@@ -29,3 +30,15 @@ class UserWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "password", "first_name", "last_name"]
+
+
+class TokenAccessObtainSerializer(TokenObtainPairSerializer):
+    default_error_messages = {
+        "no_active_account": "Invalid username or password",
+    }
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token["is_admin"] = user.is_admin
+        return token
