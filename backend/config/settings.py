@@ -32,11 +32,12 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "django_extensions",
     "rest_framework_simplejwt",
-    'rest_framework_simplejwt.token_blacklist',
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 LOCAL_APPS = [
     "apps.users",
+    "apps.manager",
 ]
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -68,7 +69,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
-    ("Michał Sikora", "206081@edu.p.lodz.com"),
+    ("Michał Sikora", "206081@edu.p.lodz.com", "48 666 666 666", "Politechnika Łódzka"),
 ]
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers

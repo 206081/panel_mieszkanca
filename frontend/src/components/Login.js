@@ -1,16 +1,18 @@
-import { useRef, useState, useEffect } from 'react';
+import {useRef, useState, useEffect} from 'react';
 import useAuth from '../hooks/useAuth';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
+import jwt from 'jwt-decode' // import dependency
 
 import axios from '../api/axios';
+
 const LOGIN_URL = '/api/login/';
 
 const Login = () => {
-    const { setAuth } = useAuth();
+    const {setAuth} = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
+    const from = location.state?.from?.pathname;
 
     const userRef = useRef();
     const errRef = useRef();
@@ -32,26 +34,28 @@ const Login = () => {
 
         try {
             const response = await axios.post(LOGIN_URL,
-                JSON.stringify({ email, password }),
+                JSON.stringify({email, password}),
                 {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     withCredentials: true
                 }
             );
-            console.log(JSON.stringify(response?.data));
-            const accessToken = response?.data?.access;
-            const refreshToken = response?.data?.refresh;
-            setAuth({ email, password, accessToken, refreshToken});
+            const access = response?.data?.access;
+            const refresh_token = response?.data?.refresh;
+            const roles = [jwt(access)?.is_admin ? "admin" : "user"];
+            setAuth({email, password, roles, access, refresh_token});
             setUser('');
             setPwd('');
-            navigate(from, { replace: true });
+            console.log(jwt(access));
+            console.log("Roles", roles);
+            navigate(from || roles.includes("admin") ? "/administration" : "/dashboard", {replace: true});
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('No Server Response');
             } else if (err.response?.status === 400) {
                 setErrMsg('Missing Username or Password');
             } else if (err.response?.status === 401) {
-                setErrMsg('Unauthorized');
+                setErrMsg(err.response?.detail);
             } else {
                 setErrMsg('Login Failed');
             }
@@ -87,7 +91,7 @@ const Login = () => {
                 <button>Sign In</button>
             </form>
             <p>
-                Need an Account?<br />
+                Need an Account?<br/>
                 <span className="line">
                     <Link to="/register">Sign Up</Link>
                 </span>

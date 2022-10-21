@@ -96,6 +96,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class LogoutViewSet(APIView):
     def post(self, request, *args, **kwargs):
+        print(self.request.data)
         if self.request.data.get("all"):
             for token in OutstandingToken.objects.filter(user=request.user):
                 BlacklistedToken.objects.get_or_create(token=token)
