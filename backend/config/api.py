@@ -1,5 +1,6 @@
 from rest_framework_nested import routers
 
+from apps.manager.views import ApartmentViewSet
 from apps.users.views import UserViewSet
 
 # Settings
@@ -8,3 +9,4 @@ router.trailing_slash = "/?"
 
 # Users API
 router.register(r"users", UserViewSet)
+router.register(r"apartments", ApartmentViewSet, basename="apartments")
