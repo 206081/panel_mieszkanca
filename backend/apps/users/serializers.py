@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.avatar.url if obj.avatar else settings.STATIC_URL + "images/default_avatar.png"
 
     def get_full_name(self, obj):
-        return obj.full_name
+        return obj.full_name + "sadasd"
 
     def get_short_name(self, obj):
         return obj.short_name

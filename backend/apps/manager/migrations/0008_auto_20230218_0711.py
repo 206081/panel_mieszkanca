@@ -6,26 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manager', '0007_auto_20230218_0642'),
+        ("manager", "0007_auto_20230218_0642"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='bill',
-            name='price',
+            model_name="bill",
+            name="price",
         ),
         migrations.RemoveField(
-            model_name='bill',
-            name='unit',
+            model_name="bill",
+            name="unit",
         ),
         migrations.AddField(
-            model_name='billtype',
-            name='price',
+            model_name="billtype",
+            name="price",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=12),
         ),
         migrations.AddField(
-            model_name='billtype',
-            name='unit',
+            model_name="billtype",
+            name="unit",
             field=models.CharField(max_length=10, null=True),
         ),
     ]

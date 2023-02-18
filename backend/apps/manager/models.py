@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.reverse import reverse
 
@@ -30,8 +31,9 @@ class Apartment(models.Model):
     housing = models.ForeignKey(HousingAssociation, on_delete=models.PROTECT)
     owners = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="Owners", related_name="owners")
     area = models.FloatField(null=False, blank=False, default=0.0)
-    balance = models.FloatField(null=False, blank=False, default=0.0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     slug = models.SlugField(max_length=40)
+    created_at = models.DateTimeField(verbose_name="Registered at", auto_now_add=timezone.now)
 
     def __str__(self):
         return f"{self.address}"
@@ -45,6 +47,8 @@ class Apartment(models.Model):
             "id": self.pk,
             "address": self.address,
             "owners": [str(u) for u in self.owners.all()],
+            "area": self.area,
+            "balance": self.balance,
         }
 
 
@@ -61,9 +65,9 @@ class Bill(models.Model):
     name = models.CharField(verbose_name="BillName", max_length=255)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField(auto_now_add=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True, related_name="apartment")
-    is_paid = models.BooleanField()
+    is_paid = models.BooleanField(default=False)
     slug = models.SlugField(max_length=40)
     bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
 
@@ -72,6 +76,8 @@ class Bill(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.__str__())
+        self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
+        self.apartment.save()
         super().save(*args, **kwargs)
 
     def get_general_info(self):
@@ -80,7 +86,7 @@ class Bill(models.Model):
             "name": self.name,
             "amount": round(self.bill_type.price * self.amount, 2),
             "unit": self.bill_type.unit,
-            "period": f"{self.start_date}-{self.end_date}",
+            "period": f"{self.start_date} - {self.end_date}",
             "is_paid": self.is_paid,
             "bill_type": self.bill_type.name,
         }

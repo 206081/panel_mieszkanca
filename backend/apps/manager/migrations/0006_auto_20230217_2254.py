@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manager', '0005_rename_bills_bill'),
+        ("manager", "0005_rename_bills_bill"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='news',
-            options={'verbose_name_plural': 'News'},
+            name="news",
+            options={"verbose_name_plural": "News"},
         ),
         migrations.AddField(
-            model_name='news',
-            name='apartment',
-            field=models.ManyToManyField(blank=True, to='manager.Apartment'),
+            model_name="news",
+            name="apartment",
+            field=models.ManyToManyField(blank=True, to="manager.Apartment"),
         ),
         migrations.AddField(
-            model_name='news',
-            name='housing',
-            field=models.ManyToManyField(blank=True, to='manager.HousingAssociation'),
+            model_name="news",
+            name="housing",
+            field=models.ManyToManyField(blank=True, to="manager.HousingAssociation"),
         ),
     ]

@@ -12,7 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.users.models import User
-from apps.users.serializers import UserSerializer, UserWriteSerializer, TokenAccessObtainSerializer
+from apps.users.serializers import TokenAccessObtainSerializer, UserSerializer, UserWriteSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

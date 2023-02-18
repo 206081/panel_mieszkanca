@@ -1,9 +1,10 @@
 from collections import defaultdict
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 
-from apps.manager.models import Apartment, Bill, HousingAssociation, News
+from apps.manager.models import Apartment, Bill, BillType, HousingAssociation, News
 
 
 class HousingAssociationCreateSerializer(serializers.ModelSerializer):
@@ -67,3 +68,20 @@ class WholeInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Apartment
         fields = ("user",)
+
+
+class BillSerializer(serializers.ModelSerializer):
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    bill_type = serializers.PrimaryKeyRelatedField(
+        many=False,
+        queryset=BillType.objects.all(),
+        required=True,
+        allow_empty=False,
+        allow_null=False,
+    )
+
+    start_date = serializers.DateField()
+
+    class Meta:
+        model = Bill
+        fields = ("id", "amount", "apartment", "start_date", "end_date", "bill_type")
