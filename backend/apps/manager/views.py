@@ -72,17 +72,26 @@ class ApartmentViewSet(ViewSet):
 class BillViewSet(ViewSet):
     def create(self, request, apartment_pk=None):
         modified_data = request.data.copy()
+
+        if not request.data.get("start_date", ""):
+
+            try:
+                modified_data["start_date"] = Apartment.objects.get(
+                    Q(id=apartment_pk) & (Q(owners=self.request.user.id))
+                ).created_at.date()
+            except Apartment.DoesNotExist:
+                apartment_pk = 0
+
+            try:
+                modified_data["start_date"] = (
+                    Bill.objects.filter(Q(bill_type__id=request.data.get("bill_type", "")) & Q(apartment=apartment_pk))
+                    .last()
+                    .end_date
+                )
+            except:
+                pass
+
         modified_data["apartment"] = apartment_pk
-
-        if not request.data.get("start_date", "") and (apartment := Apartment.objects.get(id=apartment_pk)):
-            last_bill_date = (
-                Bill.objects.filter(Q(bill_type__id=request.data.get("bill_type", "")) & Q(apartment=apartment))
-                .order_by("end_date")
-                .last()
-                .end_date
-            )
-
-            modified_data["start_date"] = last_bill_date or apartment.created_at
 
         serializer = BillSerializer(data=modified_data, context={"request": self.request})
 
