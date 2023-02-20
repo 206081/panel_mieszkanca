@@ -19,6 +19,8 @@ services:
   frontend:
     image: node:12-alpine
     command: npm run start
+    depends_on:
+        - nginx
     volumes:
       - ./.env:/app/.env:ro
       - ./frontend:/app

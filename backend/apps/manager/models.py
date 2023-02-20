@@ -45,7 +45,7 @@ class Apartment(models.Model):
     def get_general_info(self):
         return {
             "id": self.pk,
-            "address": self.address,
+            "name": self.address,
             "owners": [str(u) for u in self.owners.all()],
             "area": self.area,
             "balance": self.balance,
@@ -84,7 +84,9 @@ class Bill(models.Model):
         return {
             "id": self.pk,
             "name": self.name,
-            "amount": round(self.bill_type.price * self.amount, 2),
+            "amount": self.amount,
+            "cost": round(self.bill_type.price * self.amount, 2),
+            "unit_cost": self.bill_type.price,
             "unit": self.bill_type.unit,
             "period": f"{self.start_date} - {self.end_date}",
             "is_paid": self.is_paid,

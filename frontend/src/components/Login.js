@@ -48,7 +48,7 @@ const Login = () => {
             setPwd('');
             console.log(jwt(access));
             console.log("Roles", roles);
-            navigate(from || roles.includes("admin") ? "/administration" : "/dashboard", {replace: true});
+            navigate(from || roles.includes("admin") ? "/dashboard" : "/dashboard", {replace: true});
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('No Server Response');

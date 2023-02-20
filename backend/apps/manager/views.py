@@ -74,7 +74,6 @@ class BillViewSet(ViewSet):
         modified_data = request.data.copy()
 
         if not request.data.get("start_date", ""):
-
             try:
                 modified_data["start_date"] = Apartment.objects.get(
                     Q(id=apartment_pk) & (Q(owners=self.request.user.id))
@@ -109,8 +108,4 @@ class WholeInfoViewSet(ViewSet):
 
         serializer = WholeInfoSerializer(data=modified_data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
-        return Response(
-            {
-                "data": serializer.get_all(),
-            }
-        )
+        return Response(status=status.HTTP_200_OK, data=serializer.get_all())

@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 const Home = () => {
     return (
         <div>
-            <p>Welcome on the Panel Mieszkańca!</p>
+            <h1>Welcome on the Panel Mieszkańca!</h1>
             <p>
                 Already have an account?<br/>
                 <span className="line">
