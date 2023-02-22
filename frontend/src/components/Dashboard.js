@@ -173,12 +173,8 @@ const Dashboard = () => {
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Close
-                </Button>
-                <Button variant="primary" onClick={submitBill}>
-                    Submit
-                </Button>
+                <Button variant="secondary" onClick={handleClose}>Zamknij</Button>
+                <Button variant="primary" onClick={submitBill}>Wyślij</Button>
             </Modal.Footer>
         </Modal>
     }
