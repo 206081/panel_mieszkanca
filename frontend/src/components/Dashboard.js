@@ -53,8 +53,12 @@ const Dashboard = () => {
     }
     const handleHousing = (event) => {
         console.log("Set Housing ", event);
-        setHousing(event);
+        if (housing !== event) {
+            setHousing(event);
+            setApartment(0);
+        }
         setIsRead(true);
+
     };
 
     const handleApartment = (event) => {
