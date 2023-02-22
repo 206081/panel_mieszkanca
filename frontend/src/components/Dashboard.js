@@ -83,7 +83,7 @@ const Dashboard = () => {
     const News = ({options}) => {
         console.log({"BillType": options});
         return (<Card>
-            <Card.Header>{"News"}</Card.Header>
+            <Card.Header>Aktualności</Card.Header>
             {options.map((option, i) =>
                 <Card.Body><Card.Title>{option.title}</Card.Title><Card.Text>{option.text}</Card.Text></Card.Body>)}
         </Card>)
@@ -200,7 +200,7 @@ const Dashboard = () => {
                                                              onChange={handleApartment}/>) : <div/>}
                     </Nav>
                     <Button onClick={handleShow}>Dodaj rachunek</Button>
-                    <Button onClick={logout}>Sign Out</Button>
+                    <Button onClick={logout}>Wyloguj</Button>
                     {getModal()}
                 </Navbar.Collapse>
             </Container>

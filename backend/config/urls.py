@@ -7,7 +7,7 @@ from apps.users.views import LogoutViewSet, TokenAccessObtain
 from config.api import apartments_router, router
 
 urlpatterns = [
-    path("djangoadmin/", admin.site.urls, name="admin"),
+    path("admin/", admin.site.urls, name="admin"),
     path("api/", include(router.urls)),
     path("api/", include(apartments_router.urls)),
     path("api/login/", TokenAccessObtain.as_view(), name="token_obtain_pair"),

@@ -1,23 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from django.utils.text import slugify
-from rest_framework.reverse import reverse
 
 
 class HousingAssociation(models.Model):
     name = models.CharField(verbose_name="HousingName", max_length=254, unique=True)
-    slug = models.SlugField(max_length=40)
 
     def __str__(self):
         return "-".join(self.name.split())
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.__str__())
-        super().save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse("housing_detail", kwargs={"slug": self.slug})
 
     def get_general_info(self):
         return {
@@ -32,15 +22,10 @@ class Apartment(models.Model):
     owners = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="Owners", related_name="owners")
     area = models.FloatField(null=False, blank=False, default=0.0)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    slug = models.SlugField(max_length=40)
     created_at = models.DateTimeField(verbose_name="Registered at", auto_now_add=timezone.now)
 
     def __str__(self):
         return f"{self.address}"
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.__str__())
-        super().save(*args, **kwargs)
 
     def get_general_info(self):
         return {
@@ -68,14 +53,12 @@ class Bill(models.Model):
     end_date = models.DateField(auto_now_add=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True, related_name="apartment")
     is_paid = models.BooleanField(default=False)
-    slug = models.SlugField(max_length=40)
     bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
 
     def __str__(self):
         return f"{self.name} - {self.start_date}-{self.end_date}"
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.__str__())
         self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
         self.apartment.save()
         super().save(*args, **kwargs)
@@ -97,16 +80,11 @@ class Bill(models.Model):
 class News(models.Model):
     title = models.CharField(max_length=50)
     text = models.TextField()
-    slug = models.SlugField(max_length=40)
     housing = models.ManyToManyField(HousingAssociation, blank=True)
     apartment = models.ManyToManyField(Apartment, blank=True)
 
     def __str__(self):
         return f"{self.pk} - {self.title}"
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.__str__())
-        super().save(*args, **kwargs)
 
     def get_news(self):
         return {

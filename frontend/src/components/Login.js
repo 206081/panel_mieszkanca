@@ -1,6 +1,6 @@
 import {useRef, useState, useEffect} from 'react';
 import useAuth from '../hooks/useAuth';
-import {Link, useNavigate, useLocation} from 'react-router-dom';
+import {useNavigate, useLocation} from 'react-router-dom';
 import jwt from 'jwt-decode' // import dependency
 
 import axios from '../api/axios';
@@ -67,9 +67,9 @@ const Login = () => {
 
         <section>
             <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
-            <h1>Sign In</h1>
+            <h1>Logowanie</h1>
             <form onSubmit={handleSubmit}>
-                <label htmlFor="username">Username:</label>
+                <label htmlFor="username">Email:</label>
                 <input
                     type="text"
                     id="username"
@@ -80,7 +80,7 @@ const Login = () => {
                     required
                 />
 
-                <label htmlFor="password">Password:</label>
+                <label htmlFor="password">Hasło:</label>
                 <input
                     type="password"
                     id="password"
@@ -88,14 +88,8 @@ const Login = () => {
                     value={password}
                     required
                 />
-                <button>Sign In</button>
+                <button>Zaloguj</button>
             </form>
-            <p>
-                Need an Account?<br/>
-                <span className="line">
-                    <Link to="/register">Sign Up</Link>
-                </span>
-            </p>
         </section>
 
     )
