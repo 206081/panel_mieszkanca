@@ -105,7 +105,9 @@ class BillViewSet(ViewSet):
 class WholeInfoViewSet(ViewSet):
     def list(self, request):
         modified_data = request.data.copy()
-
+        print(modified_data)
         serializer = WholeInfoSerializer(data=modified_data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
-        return Response(status=status.HTTP_200_OK, data=serializer.get_all())
+        data = serializer.get_all()
+        data.sort(key=lambda x: x["name"])
+        return Response(status=status.HTTP_200_OK, data=data)
