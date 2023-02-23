@@ -4,7 +4,7 @@ from typing import Callable
 from django.db.models import Q
 from rest_framework import serializers
 
-from apps.manager.models import Apartment, Bill, BillType, HousingAssociation, News
+from apps.manager.models import Apartment, Bill, BillType, HousingAssociation, Issue, IssueType, News
 
 
 class HousingAssociationCreateSerializer(serializers.ModelSerializer):
@@ -132,3 +132,29 @@ class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bill
         fields = ("id", "amount", "apartment", "start_date", "end_date", "bill_type")
+
+
+class IssuesSerializer(serializers.ModelSerializer):
+    issue_type = serializers.PrimaryKeyRelatedField(
+        many=False,
+        queryset=IssueType.objects.all(),
+        required=True,
+        allow_empty=False,
+        allow_null=False,
+    )
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Issue
+        fields = ("id", "issue_type", "description", "user")
+
+
+class IssuesListSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def get_all(self):
+        return [str(issue) for issue in Issue.objects.filter(user=self.validated_data["user"])]
+
+    class Meta:
+        model = Issue
+        fields = ("id", "issue_status", "issue_type", "description", "user")

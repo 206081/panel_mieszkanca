@@ -24,6 +24,7 @@ class Apartment(models.Model):
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     created_at = models.DateTimeField(verbose_name="Registered at", auto_now_add=timezone.now)
     occupant = models.IntegerField(default=0)
+    interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def __str__(self):
         return f"{self.address}"
@@ -35,7 +36,8 @@ class Apartment(models.Model):
             "owners": [str(u) for u in self.owners.all()],
             "area": self.area,
             "balance": self.balance,
-            "Number of people living in the apartment": self.occupant,
+            "interest": self.interest,
+            "occupant": self.occupant,
         }
 
 
@@ -46,6 +48,45 @@ class BillType(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class IssueStatus(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+
+    class Meta:
+        verbose_name_plural = "Issue statuses"
+
+    def __str__(self):
+        return self.name
+
+
+class IssueType(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Issue(models.Model):
+    issue_type = models.ForeignKey(IssueType, on_delete=models.PROTECT, null=True, related_name="issue_type")
+    issue_status = models.ForeignKey(
+        IssueStatus,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="issue_status",
+        default=1,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="user",
+        related_name="user",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    description = models.TextField(default="")
+
+    def __str__(self):
+        return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
 
 
 class Bill(models.Model):
@@ -94,4 +135,3 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = "News"
-

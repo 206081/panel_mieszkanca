@@ -6,7 +6,8 @@ from rest_framework.viewsets import ViewSet
 
 from apps.manager.models import Apartment, Bill, HousingAssociation
 from apps.manager.serializers import (ApartmentListSerializer, BillSerializer, HousingAssociationCreateSerializer,
-                                      HousingAssociationListSerializer, WholeInfoSerializer)
+                                      HousingAssociationListSerializer, IssuesSerializer, WholeInfoSerializer,
+                                      IssuesListSerializer)
 
 
 class HousingAssociationViewSet(ViewSet):
@@ -111,3 +112,26 @@ class WholeInfoViewSet(ViewSet):
         data = serializer.get_all()
         data.sort(key=lambda x: x["name"])
         return Response(status=status.HTTP_200_OK, data=data)
+
+
+class IssueViewSet(ViewSet):
+    def list(self, request):
+        serializer = IssuesListSerializer(data=request.data.copy(), context={"request": self.request})
+
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            data=serializer.get_all(),
+            status=status.HTTP_200_OK,
+        )
+
+    def create(self, request):
+        modified_data = request.data.copy()
+
+        serializer = IssuesSerializer(data=modified_data, context={"request": self.request})
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"data": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
