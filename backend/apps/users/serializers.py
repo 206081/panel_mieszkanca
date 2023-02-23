@@ -40,5 +40,9 @@ class TokenAccessObtainSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token["is_admin"] = user.is_admin
+        if user.is_staff:
+            token["role"] = "stuff"
+        if user.is_superuser or user.is_admin:
+            token["role"] = "admin"
+
         return token

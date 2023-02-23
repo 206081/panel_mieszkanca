@@ -22,7 +22,6 @@ const Dashboard = () => {
     const [billType, setBillType] = useState(1);
     const [billAmount, setBillAmount] = useState(0);
     const [isRead, setIsRead] = useState(false);
-    const [iter, setIter] = useState(0);
     const axiosPrivate = useAxiosPrivate();
     const location = useLocation();
     const [show, setShow] = useState(false);
@@ -80,8 +79,10 @@ const Dashboard = () => {
         console.log({"BillType": options});
         return (<Card>
             <Card.Header>{bill_type}</Card.Header>
-            {options.map((option, i) => <Card.Body>Zużycie {option.amount}{option.unit} Koszt {option.cost}zł
-                Okres {option.period} {option.is_paid ? "Opłacone" : "Nieopłacone"}</Card.Body>)}
+            {options.map((option, i) => <Card.Body key={option.name}>
+                Zużycie {option.amount}{option.unit} Koszt {option.cost}zł
+                Okres {option.period} {option.is_paid ? "Opłacone" : "Nieopłacone"}
+            </Card.Body>)}
         </Card>)
     };
     const News = ({options}) => {
@@ -89,7 +90,10 @@ const Dashboard = () => {
         return (<Card>
             <Card.Header>Aktualności</Card.Header>
             {options.map((option, i) =>
-                <Card.Body><Card.Title>{option.title}</Card.Title><Card.Text>{option.text}</Card.Text></Card.Body>)}
+                <Card.Body key={option.name}>
+                    <Card.Title key={option.title}>{option.title}</Card.Title>
+                    <Card.Text key={option.text}>{option.text}</Card.Text>
+                </Card.Body>)}
         </Card>)
     };
     const getWhole = async (controller, mount) => {
@@ -114,7 +118,7 @@ const Dashboard = () => {
             isMounted = false;
             controller.abort();
         }
-    }, [getWhole, iter, wholeData?.length]);
+    }, [getWhole, wholeData?.length]);
 
     useEffect(() => {
         let isMounted = true;
@@ -161,7 +165,8 @@ const Dashboard = () => {
                                 setBillType(e.target.value);
                             }}
                         >
-                            <option value={1}>Woda</option>
+                            <option value={1}>Woda zimna</option>
+                            <option value={5}>Woda ciepła</option>
                             <option value={2}>Centralne Ogrzewanie</option>
                             <option value={3}>Prąd</option>
                             <option value={4}>Śmieci</option>

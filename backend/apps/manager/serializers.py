@@ -108,7 +108,7 @@ class WholeInfoSerializer(serializers.ModelSerializer):
             ).distinct():
                 housing[apartment.housing.name][-1]["news"].append(news.get_news())
 
-        data = [{"name": key, "data": value} for key, value in housing.items()]
+        data = [{"name": key, "data": sorted(value, key=lambda x: x["id"])} for key, value in housing.items()]
 
         return data
 

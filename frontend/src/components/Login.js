@@ -42,12 +42,13 @@ const Login = () => {
             );
             const access = response?.data?.access;
             const refresh_token = response?.data?.refresh;
-            const roles = [jwt(access)?.is_admin ? "admin" : "user"];
-            setAuth({email, password, roles, access, refresh_token});
+            const roles = jwt(access)?.role;
+            setAuth({roles, access, refresh_token});
+            localStorage.setItem('roles', roles);
+            localStorage.setItem('access', access);
+            localStorage.setItem('refresh_token', refresh_token);
             setUser('');
             setPwd('');
-            console.log(jwt(access));
-            console.log("Roles", roles);
             navigate(from || roles.includes("admin") ? "/dashboard" : "/dashboard", {replace: true});
         } catch (err) {
             if (!err?.response) {

@@ -23,6 +23,7 @@ class Apartment(models.Model):
     area = models.FloatField(null=False, blank=False, default=0.0)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     created_at = models.DateTimeField(verbose_name="Registered at", auto_now_add=timezone.now)
+    occupant = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.address}"
@@ -34,6 +35,7 @@ class Apartment(models.Model):
             "owners": [str(u) for u in self.owners.all()],
             "area": self.area,
             "balance": self.balance,
+            "Number of people living in the apartment": self.occupant,
         }
 
 
@@ -47,16 +49,15 @@ class BillType(models.Model):
 
 
 class Bill(models.Model):
-    name = models.CharField(verbose_name="BillName", max_length=255)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField()
-    end_date = models.DateField(auto_now_add=timezone.now)
+    end_date = models.DateField(auto_now=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True, related_name="apartment")
     is_paid = models.BooleanField(default=False)
     bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
 
     def __str__(self):
-        return f"{self.name} - {self.start_date}-{self.end_date}"
+        return f"{self.bill_type.name} - {self.start_date}-{self.end_date} - {self.apartment.address}"
 
     def save(self, *args, **kwargs):
         self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
@@ -66,7 +67,6 @@ class Bill(models.Model):
     def get_general_info(self):
         return {
             "id": self.pk,
-            "name": self.name,
             "amount": self.amount,
             "cost": round(self.bill_type.price * self.amount, 2),
             "unit_cost": self.bill_type.price,
@@ -94,3 +94,4 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = "News"
+
