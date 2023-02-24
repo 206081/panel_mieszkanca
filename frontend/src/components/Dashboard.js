@@ -209,29 +209,6 @@ const Dashboard = () => {
         }
     }
 
-    // Password
-    useEffect(() => {
-        setValidPwd(PWD_REGEX.test(password));
-        setValidMatch(password === matchPwd);
-    }, [password, matchPwd])
-
-    const submitPwd = async () => {
-        const controller = new AbortController();
-        try {
-            const response = await axiosPrivate.post('/api/users/password_change/', {
-                "password": password, signal: controller.signal
-            });
-            handleCloseBill();
-            console.log(response.data);
-            getWhole(new AbortController(), true);
-        } catch (err) {
-            navigate('/login', {state: {from: location}, replace: true});
-        }
-        return () => {
-            controller.abort();
-        }
-    }
-
     const BillType = ({options, bill_type}) => {
         console.log({"BillType": options});
         return (<Card>
@@ -285,6 +262,105 @@ const Dashboard = () => {
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleCloseBill}>Zamknij</Button>
                 <Button variant="primary" onClick={submitBill}>Wyślij</Button>
+            </Modal.Footer>
+        </Modal>
+    }
+
+    // User
+    useEffect(() => {
+        setValidPwd(PWD_REGEX.test(password));
+        setValidMatch(password === matchPwd);
+    }, [password, matchPwd])
+
+    const submitPwd = async () => {
+        const controller = new AbortController();
+        try {
+            const response = await axiosPrivate.post('/api/users/password_change/', {
+                "password": password, signal: controller.signal
+            });
+            handleCloseBill();
+            console.log(response.data);
+            getWhole(new AbortController(), true);
+        } catch (err) {
+            navigate('/login', {state: {from: location}, replace: true});
+        }
+        return () => {
+            controller.abort();
+        }
+    }
+
+    function userPanel() {
+        return <Modal show={userShow} onHide={handleCloseUser}>
+            <Modal.Header closeButton>
+                <Modal.Title>Panel Użytkownika</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Form.Group>
+                        <Form.Label htmlFor="user_panel">Dane użytkownika</Form.Label>
+                        <Card style={{width: '18rem'}}>
+                            <ListGroup variant="flush">
+                                <ListGroup.Item>Email: {userData.email}</ListGroup.Item>
+                                <ListGroup.Item>Imie i nazwisko: {userData.full_name}</ListGroup.Item>
+                                <ListGroup.Item>Data rejestracji: {userData.registered_at}</ListGroup.Item>
+                            </ListGroup>
+                        </Card>
+                        <Form.Label htmlFor="input_issue_description">Zmiana hasła</Form.Label>
+                        <br/>
+                        <label htmlFor="password">
+                            Wprowadź hasło:
+                            <FontAwesomeIcon icon={faCheck} className={validPwd ? "valid" : "hide"}/>
+                            <FontAwesomeIcon icon={faTimes} className={validPwd || !password ? "hide" : "invalid"}/>
+                        </label>
+                        <br/>
+                        <input
+                            type="password"
+                            id="password"
+                            onChange={(e) => setPwd(e.target.value)}
+                            value={password}
+                            required
+                            aria-invalid={validPwd ? "false" : "true"}
+                            aria-describedby="pwdnote"
+                            onFocus={() => setPwdFocus(true)}
+                            onBlur={() => setPwdFocus(false)}
+                        />
+                        <p id="pwdnote" className={pwdFocus && !validPwd ? "instructions" : "offscreen"}>
+                            <FontAwesomeIcon icon={faInfoCircle}/>
+                            8 do 24 znaków.<br/>
+                            Hasło musi zawierać małe i wielkie litery, cyfrę oraz znak specjalny.<br/>
+                            Dozwolone znaki specjalne: <span aria-label="exclamation mark">!</span> <span
+                            aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span
+                            aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
+                        </p>
+                        <br/>
+                        <label htmlFor="confirm_pwd">
+                            Potwierdź hasło:
+                            <FontAwesomeIcon icon={faCheck} className={validMatch && matchPwd ? "valid" : "hide"}/>
+                            <FontAwesomeIcon icon={faTimes} className={validMatch || !matchPwd ? "hide" : "invalid"}/>
+                        </label>
+                        <br/>
+                        <input
+                            type="password"
+                            id="confirm_pwd"
+                            onChange={(e) => setMatchPwd(e.target.value)}
+                            value={matchPwd}
+                            required
+                            aria-invalid={validMatch ? "false" : "true"}
+                            aria-describedby="confirmnote"
+                            onFocus={() => setMatchFocus(true)}
+                            onBlur={() => setMatchFocus(false)}
+                        />
+                        <p id="confirmnote" className={matchFocus && !validMatch ? "instructions" : "offscreen"}>
+                            <FontAwesomeIcon icon={faInfoCircle}/>
+                            Powtórzone hasło musi pasować do pierwszego.
+                        </p>
+
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseUser}>Zamknij</Button>
+                <Button disabled={!validPwd || !validMatch ? true : false} variant="primary" onClick={submitPwd}>Zmień hasło</Button>
             </Modal.Footer>
         </Modal>
     }
@@ -361,86 +437,10 @@ const Dashboard = () => {
         </Card>)
     };
 
-
     function getIssues() {
         return <Issues options={issuesData}/>;
     }
 
-    function userPanel() {
-        return <Modal show={userShow} onHide={handleCloseUser}>
-            <Modal.Header closeButton>
-                <Modal.Title>Panel Użytkownika</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form>
-                    <Form.Group>
-                        <Form.Label htmlFor="user_panel">Dane użytkownika</Form.Label>
-                        <Card style={{width: '18rem'}}>
-                            <ListGroup variant="flush">
-                                <ListGroup.Item>Email: {userData.email}</ListGroup.Item>
-                                <ListGroup.Item>Imie i nazwisko: {userData.full_name}</ListGroup.Item>
-                                <ListGroup.Item>Data rejestracji: {userData.registered_at}</ListGroup.Item>
-                            </ListGroup>
-                        </Card>
-                        <Form.Label htmlFor="input_issue_description">Zmiana hasła</Form.Label>
-                        <br/>
-                        <label htmlFor="password">
-                            Wprowadź hasło:
-                            <FontAwesomeIcon icon={faCheck} className={validPwd ? "valid" : "hide"}/>
-                            <FontAwesomeIcon icon={faTimes} className={validPwd || !password ? "hide" : "invalid"}/>
-                        </label>
-                        <br/>
-                        <input
-                            type="password"
-                            id="password"
-                            onChange={(e) => setPwd(e.target.value)}
-                            value={password}
-                            required
-                            aria-invalid={validPwd ? "false" : "true"}
-                            aria-describedby="pwdnote"
-                            onFocus={() => setPwdFocus(true)}
-                            onBlur={() => setPwdFocus(false)}
-                        />
-                        <p id="pwdnote" className={pwdFocus && !validPwd ? "instructions" : "offscreen"}>
-                            <FontAwesomeIcon icon={faInfoCircle}/>
-                            8 to 24 characters.<br/>
-                            Must include uppercase and lowercase letters, a number and a special character.<br/>
-                            Allowed special characters: <span aria-label="exclamation mark">!</span> <span
-                            aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span
-                            aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
-                        </p>
-                        <br/>
-                        <label htmlFor="confirm_pwd">
-                            Potwierdź hasło:
-                            <FontAwesomeIcon icon={faCheck} className={validMatch && matchPwd ? "valid" : "hide"}/>
-                            <FontAwesomeIcon icon={faTimes} className={validMatch || !matchPwd ? "hide" : "invalid"}/>
-                        </label>
-                        <br/>
-                        <input
-                            type="password"
-                            id="confirm_pwd"
-                            onChange={(e) => setMatchPwd(e.target.value)}
-                            value={matchPwd}
-                            required
-                            aria-invalid={validMatch ? "false" : "true"}
-                            aria-describedby="confirmnote"
-                            onFocus={() => setMatchFocus(true)}
-                            onBlur={() => setMatchFocus(false)}
-                        />
-                        <p id="confirmnote" className={matchFocus && !validMatch ? "instructions" : "offscreen"}>
-                            <FontAwesomeIcon icon={faInfoCircle}/>
-                            Powtórzone hasło musi pasować do pierwszego.
-                        </p>
-
-                    </Form.Group>
-                </Form>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleCloseUser}>Zamknij</Button>
-                <Button disabled={!validPwd || !validMatch ? true : false} variant="primary" onClick={submitPwd}>Zmień hasło</Button>
-            </Modal.Footer>
-        </Modal>
-    }
 
     return (<div>
         {getNavbar()}
