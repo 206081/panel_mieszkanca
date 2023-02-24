@@ -50,6 +50,48 @@ class BillType(models.Model):
         return self.name
 
 
+class Bill(models.Model):
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    start_date = models.DateField()
+    end_date = models.DateField(auto_now=timezone.now)
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
+    is_paid = models.BooleanField(default=False)
+    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
+
+    def __str__(self):
+        return f"{self.bill_type.name} - {self.start_date}-{self.end_date} - {self.apartment.address}"
+
+    def save(self, *args, **kwargs):
+        self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
+        self.apartment.save()
+        super().save(*args, **kwargs)
+
+    def get_general_info(self):
+        return {
+            "id": self.pk,
+            "amount": self.amount,
+            "cost": round(self.bill_type.price * self.amount, 2),
+            "unit_cost": self.bill_type.price,
+            "unit": self.bill_type.unit,
+            "period": f"{self.start_date} - {self.end_date}",
+            "is_paid": self.is_paid,
+            "bill_type": self.bill_type.name,
+        }
+
+
+class Income(models.Model):
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.apartment.address} - {self.amount} zł"
+
+    def save(self, *args, **kwargs):
+        self.apartment.balance += self.amount
+        self.apartment.save()
+        super().save(*args, **kwargs)
+
+
 class IssueStatus(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
@@ -87,35 +129,6 @@ class Issue(models.Model):
 
     def __str__(self):
         return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
-
-
-class Bill(models.Model):
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    start_date = models.DateField()
-    end_date = models.DateField(auto_now=timezone.now)
-    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True, related_name="apartment")
-    is_paid = models.BooleanField(default=False)
-    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
-
-    def __str__(self):
-        return f"{self.bill_type.name} - {self.start_date}-{self.end_date} - {self.apartment.address}"
-
-    def save(self, *args, **kwargs):
-        self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
-        self.apartment.save()
-        super().save(*args, **kwargs)
-
-    def get_general_info(self):
-        return {
-            "id": self.pk,
-            "amount": self.amount,
-            "cost": round(self.bill_type.price * self.amount, 2),
-            "unit_cost": self.bill_type.price,
-            "unit": self.bill_type.unit,
-            "period": f"{self.start_date} - {self.end_date}",
-            "is_paid": self.is_paid,
-            "bill_type": self.bill_type.name,
-        }
 
 
 class News(models.Model):

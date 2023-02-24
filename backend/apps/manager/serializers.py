@@ -100,6 +100,7 @@ class WholeInfoSerializer(serializers.ModelSerializer):
             housing[apartment.housing.name].append(apartment.get_general_info())
             housing[apartment.housing.name][-1].update({"bills": []})
             housing[apartment.housing.name][-1].update({"news": []})
+            housing[apartment.housing.name][-1].update({"rent": []})
             for bill in Bill.objects.filter(Q(apartment__id=apartment.id)):
                 housing[apartment.housing.name][-1]["bills"].append(bill.get_general_info())
 
