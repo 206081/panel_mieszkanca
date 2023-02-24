@@ -93,6 +93,14 @@ class DefaultOrderedDict(OrderedDict):
 class WholeInfoSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
+    @staticmethod
+    def get_rents(apartment):
+        rents = []
+        bills = Bill._prediction_bills + Bill._occupant_bills + Bill._meters + ["Zaliczka na CO"]
+        for bill in Bill.objects.filter(Q(apartment__id=apartment.id) & Q(bill_type__name__in=bills)):
+            rents.append(bill.get_general_info())
+        return rents
+
     def get_all(self):
         housing = DefaultOrderedDict(list)
 
@@ -108,6 +116,9 @@ class WholeInfoSerializer(serializers.ModelSerializer):
                 Q(apartment__id=apartment.pk) | Q(housing__id=apartment.housing.pk)
             ).distinct():
                 housing[apartment.housing.name][-1]["news"].append(news.get_news())
+
+            for rent in self.get_rents(apartment):
+                housing[apartment.housing.name][-1]["rent"].append(rent)
 
         data = [{"name": key, "data": sorted(value, key=lambda x: x["id"])} for key, value in housing.items()]
 

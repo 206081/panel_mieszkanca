@@ -121,10 +121,12 @@ const Dashboard = () => {
                 setIssuesData(issues);
                 setUserData(user);
                 setWholeData(whole);
+                console.log("Issues", issues);
+                console.log("User", user);
+                console.log("Whole", whole);
             });
         } catch (err) {
-            console.log("Whole IN");
-            console.log(err);
+            console.log("Whole IN", err);
             navigate('/login', {state: {from: location}, replace: true});
         }
     }
@@ -159,7 +161,7 @@ const Dashboard = () => {
 
     function getApartmentInfo() {
         const apart = wholeData[housing].data[apartment]
-        console.log(apart);
+        console.log("Apartment", apart);
         return (<Card>
             <Card.Header>Dane mieszkania</Card.Header>
             <Card.Body key={"Info" + apart.name}>
@@ -199,7 +201,7 @@ const Dashboard = () => {
                 "bill_type": billType, "amount": billAmount, signal: controller.signal
             });
             handleCloseBill();
-            console.log(response.data);
+            console.log("SubmitBillResponse", response.data);
             getWhole(new AbortController(), true);
         } catch (err) {
             navigate('/login', {state: {from: location}, replace: true});
@@ -210,7 +212,6 @@ const Dashboard = () => {
     }
 
     const BillType = ({options, bill_type}) => {
-        console.log({"BillType": options});
         return (<Card>
             <Card.Header>{bill_type}</Card.Header>
             {options.map((option, i) => <Card.Body key={option.name}>
@@ -239,7 +240,7 @@ const Dashboard = () => {
                             as="select"
                             value={billType}
                             onChange={e => {
-                                console.log("BillType:", e.target.value);
+                                console.log("SetBillType:", e.target.value);
                                 setBillType(e.target.value);
                             }}
                         >
@@ -253,7 +254,7 @@ const Dashboard = () => {
                         <Form.Control type="number"
                                       placeholder="Podaj zużycie"
                                       onChange={e => {
-                                          console.log("BillAmount:", e.target.value);
+                                          console.log("SetBillAmount:", e.target.value);
                                           setBillAmount(e.target.value);
                                       }}/>
                     </Form.Group>
@@ -279,7 +280,7 @@ const Dashboard = () => {
                 "password": password, signal: controller.signal
             });
             handleCloseBill();
-            console.log(response.data);
+            console.log("submitPwdResponse", response.data);
             getWhole(new AbortController(), true);
         } catch (err) {
             navigate('/login', {state: {from: location}, replace: true});
@@ -373,7 +374,7 @@ const Dashboard = () => {
                 "issue_type": issueType, "description": issueText, signal: controller.signal
             });
             handleCloseIssue();
-            console.log(response.data);
+            console.log("SubmitIssueResponse", response.data);
             getWhole(new AbortController(), true);
         } catch (err) {
             navigate('/login', {state: {from: location}, replace: true});
@@ -396,7 +397,7 @@ const Dashboard = () => {
                             as="select"
                             value={issueType}
                             onChange={e => {
-                                console.log("IssueType:", e.target.value);
+                                console.log("SetIssueType:", e.target.value);
                                 setIssueType(e.target.value);
                             }}
                         >
@@ -411,7 +412,7 @@ const Dashboard = () => {
                         <Form.Control type="text"
                                       placeholder="Podaj opis usterki"
                                       onChange={e => {
-                                          console.log("Issue text:", e.target.value);
+                                          console.log("SetIssueText:", e.target.value);
                                           setIssueText(e.target.value);
                                       }}/>
                     </Form.Group>

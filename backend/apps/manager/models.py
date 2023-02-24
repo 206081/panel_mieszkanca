@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -25,6 +27,7 @@ class Apartment(models.Model):
     created_at = models.DateTimeField(verbose_name="Registered at", auto_now_add=timezone.now)
     occupant = models.IntegerField(default=0)
     interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    predictions = models.DecimalField(max_digits=4, decimal_places=0, default=0)
 
     def __str__(self):
         return f"{self.address}"
@@ -38,6 +41,7 @@ class Apartment(models.Model):
             "balance": self.balance,
             "interest": self.interest,
             "occupant": self.occupant,
+            "predictions": self.predictions,
         }
 
 
@@ -53,16 +57,37 @@ class BillType(models.Model):
 class Bill(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField()
-    end_date = models.DateField(auto_now=timezone.now)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    end_date = models.DateField(default=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
-    is_paid = models.BooleanField(default=False)
+    is_balanced = models.BooleanField(default=False)
     bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
+    _prediction_bills = ["Woda ciepła", "Woda zimna i ścieki", "Ścieki"]
+    _occupant_bills = ["Odpady komunalne"]
+    _meters = ["Eksploatacja", "Centralne ogrzewanie", "Fundusz remontowy"]
 
     def __str__(self):
         return f"{self.bill_type.name} - {self.start_date}-{self.end_date} - {self.apartment.address}"
 
     def save(self, *args, **kwargs):
-        self.apartment.balance -= round(self.bill_type.price * self.amount, 2)
+        if self.bill_type.name in self._prediction_bills:
+            self.price = round(self.apartment.predictions * self.bill_type.price, 2)
+            print("prediction")
+        elif self.bill_type.name in self._occupant_bills:
+            print("occupant")
+            self.price = round(self.apartment.occupant * self.bill_type.price, 2)
+        elif self.bill_type.name in self._meters:
+            print("area")
+            self.price = round(Decimal(self.apartment.area) * self.bill_type.price, 2)
+        else:
+            print("bill else")
+            self.price = round(self.bill_type.price * self.amount, 2)
+        print(self.price)
+        print(self.apartment.balance)
+
+        if not self.is_balanced:
+            self.apartment.balance -= self.price
+            self.is_balanced = True
         self.apartment.save()
         super().save(*args, **kwargs)
 
@@ -74,7 +99,7 @@ class Bill(models.Model):
             "unit_cost": self.bill_type.price,
             "unit": self.bill_type.unit,
             "period": f"{self.start_date} - {self.end_date}",
-            "is_paid": self.is_paid,
+            "is_balanced": self.is_balanced,
             "bill_type": self.bill_type.name,
         }
 
