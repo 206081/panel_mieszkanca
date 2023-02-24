@@ -153,7 +153,10 @@ class IssuesListSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def get_all(self):
-        return [str(issue) for issue in Issue.objects.filter(user=self.validated_data["user"])]
+        return [
+            {"type": issue.issue_type.name, "status": issue.issue_status.name, "description": issue.description}
+            for issue in Issue.objects.filter(user=self.validated_data["user"])
+        ]
 
     class Meta:
         model = Issue

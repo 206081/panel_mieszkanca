@@ -99,29 +99,27 @@ const Dashboard = () => {
         setApartment(event);
     };
 
-    const getWhole = async (controller, mount) => {
+    const getWhole = async () => {
         try {
-            const response = await axiosPrivate.get('/api/whole', {
-                signal: controller.signal
+            let endpoints = ['/api/whole', '/api/issues']
+            Promise.all(endpoints.map((endpoint) => axiosPrivate.get(endpoint))).then(([{data: whole}, {data: issues}]) => {
+                setIssuesData(issues);
+                setWholeData(whole);
             });
-            setWholeData(response.data);
         } catch (err) {
             console.log("Whole IN");
+            console.log(err);
             navigate('/login', {state: {from: location}, replace: true});
         }
     }
 
     useEffect(() => {
-        let isMounted = true;
-        const controller = new AbortController();
 
         if (!wholeData?.length) {
-            getWhole(controller, isMounted);
+            getWhole();
         }
 
         return () => {
-            isMounted = false;
-            controller.abort();
         }
     });
 
@@ -141,7 +139,7 @@ const Dashboard = () => {
             isMounted = false;
             controller.abort();
         }
-    }, [wholeData, housing, apartment])
+    }, [wholeData, housing, apartment, issuesData])
 
     function getApartmentInfo() {
         const apart = wholeData[housing].data[apartment]
@@ -310,11 +308,30 @@ const Dashboard = () => {
             </Modal.Footer>
         </Modal>
     }
+    // {"type": issue.issue_type.name, "status": issue.issue_status.name, "description": issue.description}
 
+    const Issues = ({options}) => {
+        console.log("Issues", options);
+        console.log("issuesData", issuesData);
+        return (<Card>
+            <Card.Header>Issues</Card.Header>
+            {options.map((option, i) => <Card.Body key={option.type+i}>
+                <Card.Text key={option.type}>Typ uster:{option.type}</Card.Text>
+                <Card.Text key={option.description}>Opis usterki: {option.description}</Card.Text>
+                <Card.Text key={option.status}>Status: {option.status}</Card.Text>
+            </Card.Body>)}
+        </Card>)
+    };
+
+
+    function getIssues() {
+        return <Issues options={issuesData}/>;
+    }
 
     return (<div>
         {getNavbar()}
         {isRead ? getApartmentInfo() : <div/>}
+        {isRead ? getIssues() : <div/>}
         {isRead ? getNews() : <div/>}
         {isRead ? getBills() : <div/>}
     </div>)
