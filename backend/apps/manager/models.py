@@ -5,6 +5,60 @@ from django.db import models
 from django.utils import timezone
 
 
+class BillType(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    unit = models.CharField(max_length=10, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class IssueStatus(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+
+    class Meta:
+        verbose_name_plural = "Issue statuses"
+
+    def __str__(self):
+        return self.name
+
+
+class IssueType(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Issue(models.Model):
+    issue_type = models.ForeignKey(IssueType, on_delete=models.PROTECT, null=True, related_name="issue_type")
+    issue_status = models.ForeignKey(
+        IssueStatus,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="issue_status",
+        default=1,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="user",
+        related_name="user",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    description = models.TextField(default="")
+
+    def __str__(self):
+        return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
+
+
+class HousingBill(models.Model):
+    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+
 class HousingAssociation(models.Model):
     name = models.CharField(verbose_name="HousingName", max_length=254, unique=True)
 
@@ -45,15 +99,6 @@ class Apartment(models.Model):
         }
 
 
-class BillType(models.Model):
-    name = models.CharField(max_length=20, unique=True)
-    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    unit = models.CharField(max_length=10, null=True)
-
-    def __str__(self):
-        return self.name
-
-
 class Bill(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField()
@@ -61,7 +106,7 @@ class Bill(models.Model):
     end_date = models.DateField(default=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
     is_balanced = models.BooleanField(default=False)
-    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True, related_name="bill_type")
+    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True)
     _prediction_bills = ["Woda ciepła", "Woda zimna i ścieki", "Ścieki"]
     _occupant_bills = ["Odpady komunalne"]
     _meters = ["Eksploatacja", "Centralne ogrzewanie", "Fundusz remontowy"]
@@ -115,45 +160,6 @@ class Income(models.Model):
         self.apartment.balance += self.amount
         self.apartment.save()
         super().save(*args, **kwargs)
-
-
-class IssueStatus(models.Model):
-    name = models.CharField(max_length=30, unique=True)
-
-    class Meta:
-        verbose_name_plural = "Issue statuses"
-
-    def __str__(self):
-        return self.name
-
-
-class IssueType(models.Model):
-    name = models.CharField(max_length=30, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Issue(models.Model):
-    issue_type = models.ForeignKey(IssueType, on_delete=models.PROTECT, null=True, related_name="issue_type")
-    issue_status = models.ForeignKey(
-        IssueStatus,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name="issue_status",
-        default=1,
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        verbose_name="user",
-        related_name="user",
-        on_delete=models.CASCADE,
-        null=True,
-    )
-    description = models.TextField(default="")
-
-    def __str__(self):
-        return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
 
 
 class News(models.Model):

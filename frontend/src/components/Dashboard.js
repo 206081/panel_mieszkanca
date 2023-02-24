@@ -14,6 +14,7 @@ import Form from 'react-bootstrap/Form';
 import {ListGroup} from "react-bootstrap";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheck, faInfoCircle, faTimes} from "@fortawesome/free-solid-svg-icons";
+
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const Dashboard = () => {
@@ -87,9 +88,10 @@ const Dashboard = () => {
                                                              options={wholeData[housing].data}
                                                              onChange={handleApartment}/>) : <div/>}
                     </Nav>
-                    <Button onClick={handleShowBill}>Dodaj rachunek</Button>
+                    {/*<Button onClick={handleShowBill}>Dodaj rachunek</Button>*/}
                     <Button onClick={handleShowIssue}>Dodaj usterkę</Button>
                     <Button onClick={handleShowUser}>Panel użytkownika</Button>
+                    <Button onClick={handleShowUser}>Raporty</Button>
                     <Button onClick={logout}>Wyloguj</Button>
                     {getBillModal()}
                     {getIssueModal()}
@@ -161,17 +163,28 @@ const Dashboard = () => {
 
     function getApartmentInfo() {
         const apart = wholeData[housing].data[apartment]
+        let variant = apart.balance >= 0 ? "success" : "danger"
+        let header = apart.balance >= 0 ? "Dane mieszkania" : "Dane mieszkania, proszę uiścić należność"
+        let owners;
+        console.log("Length", apart.owners.length);
+        if (apart.owners.length > 1) {
+            owners = ["Właściciele: ", apart.owners.join(", ")].join("")
+        } else {
+            owners = ["Właściciel: ", apart.owners.join(", ")].join("")
+        }
+        console.log("Variant", variant);
         console.log("Apartment", apart);
-        return (<Card>
-            <Card.Header>Dane mieszkania</Card.Header>
+        return (<Card bg={variant}
+                      text="white">
+            <Card.Header>{header}</Card.Header>
             <Card.Body key={"Info" + apart.name}>
                 <Card.Title key={"Name" + apart.name}>Adres: {apart.name}</Card.Title>
                 <Card.Text key={"ApartmentArea"}>
                     Powierzchnia mieszkania: {apart.area} m²<br/>
                     Saldo: {apart.balance} zł<br/>
                     Odsetki: {apart.interest} zł<br/>
-                    Ilość osób zamieszkujących mieszkanie: {apart.occupant}<br/>
-                    Właściciele: {apart.owners.join(", ")}
+                    Liczba osób zamieszkujących mieszkanie: {apart.occupant}<br/>
+                    {owners}
                 </Card.Text>
             </Card.Body>
         </Card>)
@@ -225,6 +238,25 @@ const Dashboard = () => {
         return billTypes.map((_type, i) => <BillType
             options={wholeData[housing].data[apartment].bills.filter(fl => fl.bill_type === _type)}
             bill_type={_type}/>);
+    }
+
+    function getRents() {
+        let rents = wholeData[housing].data[apartment].rent;
+        let amount = 0;
+        amount += rents.map(x => x.cost).reduce((amount, a) => amount + a, 0);
+        console.log("Rent", rents);
+
+        return (<Card>
+            <Card.Header>Aktualne opłaty za lokal</Card.Header>
+            <Card.Body>
+                {rents.map(option =>
+                    <Card.Text key={"bill" + option.id}>
+                        {option.bill_type.padStart(20, ' ')} - {option.amount}{option.unit} Koszt {option.cost}zł
+                    </Card.Text>)}
+
+                <Card.Text>Całość: {Math.round(amount * 100) / 100}zł</Card.Text>
+            </Card.Body>
+        </Card>)
     }
 
     function getBillModal() {
@@ -353,7 +385,7 @@ const Dashboard = () => {
                         />
                         <p id="confirmnote" className={matchFocus && !validMatch ? "instructions" : "offscreen"}>
                             <FontAwesomeIcon icon={faInfoCircle}/>
-                            Powtórzone hasło musi pasować do pierwszego.
+                            Hasła w obu polach nie są zgodne.
                         </p>
 
                     </Form.Group>
@@ -361,7 +393,8 @@ const Dashboard = () => {
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleCloseUser}>Zamknij</Button>
-                <Button disabled={!validPwd || !validMatch ? true : false} variant="primary" onClick={submitPwd}>Zmień hasło</Button>
+                <Button disabled={!validPwd || !validMatch ? true : false} variant="primary" onClick={submitPwd}>Zmień
+                    hasło</Button>
             </Modal.Footer>
         </Modal>
     }
@@ -448,7 +481,8 @@ const Dashboard = () => {
         {isRead ? getApartmentInfo() : <div/>}
         {isRead ? getIssues() : <div/>}
         {isRead ? getNews() : <div/>}
-        {isRead ? getBills() : <div/>}
+        {/*{isRead ? getBills() : <div/>}*/}
+        {isRead ? getRents() : <div/>}
         {isRead ? userPanel() : <div/>}
     </div>)
 }

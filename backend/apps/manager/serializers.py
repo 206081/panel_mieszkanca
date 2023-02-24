@@ -2,6 +2,7 @@ from collections import OrderedDict
 from typing import Callable
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 
 from apps.manager.models import Apartment, Bill, BillType, HousingAssociation, Issue, IssueType, News
@@ -97,7 +98,14 @@ class WholeInfoSerializer(serializers.ModelSerializer):
     def get_rents(apartment):
         rents = []
         bills = Bill._prediction_bills + Bill._occupant_bills + Bill._meters + ["Zaliczka na CO"]
-        for bill in Bill.objects.filter(Q(apartment__id=apartment.id) & Q(bill_type__name__in=bills)):
+        month = timezone.now().month - 1 or 12
+        year = timezone.now().year if month != 12 else timezone.now().year - 1
+        for bill in Bill.objects.filter(
+            Q(apartment__id=apartment.id)
+            & Q(bill_type__name__in=bills)
+            & Q(end_date__month=month)
+            & Q(end_date__year=year)
+        ):
             rents.append(bill.get_general_info())
         return rents
 

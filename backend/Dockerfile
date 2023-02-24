@@ -8,6 +8,9 @@ ENV PYTHONFAULTHANDLER=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
 
+RUN yes | apt-get install graphviz
+RUN yes | apt-get install graphviz-dev
+
 # python dependencies
 COPY ./requirements.txt /
 RUN pip install -r ./requirements.txt
