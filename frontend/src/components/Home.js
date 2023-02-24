@@ -9,6 +9,11 @@ const Home = () => {
                     <Link to="/login">Zaloguj się</Link>
                 </span>
             </p>
+            <p>
+                <span className="line">
+                    <Link to="/password_reset">Nie pamiętasz hasła? Przypomnij je</Link>
+                </span>
+            </p>
         </div>
     )
 }

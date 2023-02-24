@@ -113,6 +113,14 @@ li {
     margin-bottom: 0.5rem;
 }
 
+.successmsg {
+    background-color: olivedrab;
+    color: black;
+    font-weight: bold;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
 .line {
     display: inline-block;
 }

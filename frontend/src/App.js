@@ -10,6 +10,7 @@ import RequireAuth from './components/RequireAuth';
 import {Routes, Route} from 'react-router-dom';
 import Users from "./components/Users";
 import {AuthProvider} from "./context/AuthProvider";
+import Password from "./components/Password";
 
 const ROLES = {
     "admin": "admin",
@@ -28,6 +29,7 @@ function App() {
                     {/* public routes */}
                     <Route path="login" element={<Login/>}/>
                     <Route path="unauthorized" element={<Unauthorized/>}/>
+                    <Route path="password_reset" element={<Password/>}/>
 
                     {/* we want to protect these routes */}
                     <Route element={<RequireAuth allowedRoles={[ROLES.user, ROLES.admin]}/>}>
