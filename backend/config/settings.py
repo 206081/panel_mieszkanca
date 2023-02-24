@@ -228,3 +228,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_email",
     "ROTATE_REFRESH_TOKENS": True,
 }
+
+DOMAIN = env.str("DOMAIN")
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")

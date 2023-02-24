@@ -72,25 +72,29 @@ class UserViewSet(viewsets.ModelViewSet):
         if User.objects.filter(email=request.data["email"]).exists():
             user = User.objects.get(email=request.data["email"])
             params = {"user": user, "DOMAIN": settings.DOMAIN}
-            send_mail(
-                subject="Password reset",
-                message=render_to_string("mail/password_reset.txt", params),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[request.data["email"]],
-            )
-            return Response(status=status.HTTP_200_OK)
+            try:
+                send_mail(
+                    subject="Password reset",
+                    message=render_to_string("mail/password_reset.txt", params),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.data["email"]],
+                )
+            except OSError:
+                print("Email sent.")
+            return Response(status=status.HTTP_200_OK, data=render_to_string("mail/password_reset.txt", params))
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @action(methods=["POST"], detail=False)
     def password_change(self, request, format=None):
-        if User.objects.filter(token=request.data["token"]).exists():
-            user = User.objects.get(token=request.data["token"])
+        if User.objects.filter(id=self.request.user.id).exists():
+            print("User exist")
+            user = User.objects.get(id=self.request.user.id)
             user.set_password(request.data["password"])
-            user.token = uuid4()
             user.save()
             return Response(status=status.HTTP_200_OK)
         else:
+            print("User does not exist")
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 

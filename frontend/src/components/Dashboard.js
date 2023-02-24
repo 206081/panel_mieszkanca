@@ -11,6 +11,10 @@ import Card from 'react-bootstrap/Card';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import {ListGroup} from "react-bootstrap";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCheck, faInfoCircle, faTimes} from "@fortawesome/free-solid-svg-icons";
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const Dashboard = () => {
     const {setAuth} = useContext(AuthContext);
@@ -24,6 +28,13 @@ const Dashboard = () => {
     const [housing, setHousing] = useState(0);
     const [wholeData, setWholeData] = useState();
     const [issuesData, setIssuesData] = useState();
+    const [userData, setUserData] = useState({});
+    const [password, setPwd] = useState();
+    const [validPwd, setValidPwd] = useState(false);
+    const [pwdFocus, setPwdFocus] = useState(false);
+    const [matchPwd, setMatchPwd] = useState('');
+    const [validMatch, setValidMatch] = useState(false);
+    const [matchFocus, setMatchFocus] = useState(false);
 
     const [billAmount, setBillAmount] = useState(0);
     const [billTypes, setBillTypes] = useState("EmptyType");
@@ -34,11 +45,14 @@ const Dashboard = () => {
 
     const [billShow, setBillShow] = useState(false);
     const [issueShow, setIssueShow] = useState(false);
+    const [userShow, setUserShow] = useState(false);
 
     const handleCloseBill = () => setBillShow(false);
     const handleShowBill = () => setBillShow(true);
     const handleCloseIssue = () => setIssueShow(false);
     const handleShowIssue = () => setIssueShow(true);
+    const handleCloseUser = () => setUserShow(false);
+    const handleShowUser = () => setUserShow(true);
 
     const logout = async () => {
         setAuth({});
@@ -75,6 +89,7 @@ const Dashboard = () => {
                     </Nav>
                     <Button onClick={handleShowBill}>Dodaj rachunek</Button>
                     <Button onClick={handleShowIssue}>Dodaj usterkę</Button>
+                    <Button onClick={handleShowUser}>Panel użytkownika</Button>
                     <Button onClick={logout}>Wyloguj</Button>
                     {getBillModal()}
                     {getIssueModal()}
@@ -101,9 +116,10 @@ const Dashboard = () => {
 
     const getWhole = async () => {
         try {
-            let endpoints = ['/api/whole', '/api/issues']
-            Promise.all(endpoints.map((endpoint) => axiosPrivate.get(endpoint))).then(([{data: whole}, {data: issues}]) => {
+            let endpoints = ['/api/whole', '/api/issues', 'api/users/profile']
+            Promise.all(endpoints.map((endpoint) => axiosPrivate.get(endpoint))).then(([{data: whole}, {data: issues}, {data: user}]) => {
                 setIssuesData(issues);
+                setUserData(user);
                 setWholeData(whole);
             });
         } catch (err) {
@@ -181,6 +197,29 @@ const Dashboard = () => {
         try {
             const response = await axiosPrivate.post('/api/apartments/' + wholeData[housing].data[apartment].id + '/bills/', {
                 "bill_type": billType, "amount": billAmount, signal: controller.signal
+            });
+            handleCloseBill();
+            console.log(response.data);
+            getWhole(new AbortController(), true);
+        } catch (err) {
+            navigate('/login', {state: {from: location}, replace: true});
+        }
+        return () => {
+            controller.abort();
+        }
+    }
+
+    // Password
+    useEffect(() => {
+        setValidPwd(PWD_REGEX.test(password));
+        setValidMatch(password === matchPwd);
+    }, [password, matchPwd])
+
+    const submitPwd = async () => {
+        const controller = new AbortController();
+        try {
+            const response = await axiosPrivate.post('/api/users/password_change/', {
+                "password": password, signal: controller.signal
             });
             handleCloseBill();
             console.log(response.data);
@@ -308,14 +347,13 @@ const Dashboard = () => {
             </Modal.Footer>
         </Modal>
     }
-    // {"type": issue.issue_type.name, "status": issue.issue_status.name, "description": issue.description}
 
     const Issues = ({options}) => {
         console.log("Issues", options);
         console.log("issuesData", issuesData);
         return (<Card>
             <Card.Header>Issues</Card.Header>
-            {options.map((option, i) => <Card.Body key={option.type+i}>
+            {options.map((option, i) => <Card.Body key={option.type + i}>
                 <Card.Text key={option.type}>Typ uster:{option.type}</Card.Text>
                 <Card.Text key={option.description}>Opis usterki: {option.description}</Card.Text>
                 <Card.Text key={option.status}>Status: {option.status}</Card.Text>
@@ -328,12 +366,89 @@ const Dashboard = () => {
         return <Issues options={issuesData}/>;
     }
 
+    function userPanel() {
+        return <Modal show={userShow} onHide={handleCloseUser}>
+            <Modal.Header closeButton>
+                <Modal.Title>Panel Użytkownika</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Form.Group>
+                        <Form.Label htmlFor="user_panel">Dane użytkownika</Form.Label>
+                        <Card style={{width: '18rem'}}>
+                            <ListGroup variant="flush">
+                                <ListGroup.Item>Email: {userData.email}</ListGroup.Item>
+                                <ListGroup.Item>Imie i nazwisko: {userData.full_name}</ListGroup.Item>
+                                <ListGroup.Item>Data rejestracji: {userData.registered_at}</ListGroup.Item>
+                            </ListGroup>
+                        </Card>
+                        <Form.Label htmlFor="input_issue_description">Zmiana hasła</Form.Label>
+                        <br/>
+                        <label htmlFor="password">
+                            Wprowadź hasło:
+                            <FontAwesomeIcon icon={faCheck} className={validPwd ? "valid" : "hide"}/>
+                            <FontAwesomeIcon icon={faTimes} className={validPwd || !password ? "hide" : "invalid"}/>
+                        </label>
+                        <br/>
+                        <input
+                            type="password"
+                            id="password"
+                            onChange={(e) => setPwd(e.target.value)}
+                            value={password}
+                            required
+                            aria-invalid={validPwd ? "false" : "true"}
+                            aria-describedby="pwdnote"
+                            onFocus={() => setPwdFocus(true)}
+                            onBlur={() => setPwdFocus(false)}
+                        />
+                        <p id="pwdnote" className={pwdFocus && !validPwd ? "instructions" : "offscreen"}>
+                            <FontAwesomeIcon icon={faInfoCircle}/>
+                            8 to 24 characters.<br/>
+                            Must include uppercase and lowercase letters, a number and a special character.<br/>
+                            Allowed special characters: <span aria-label="exclamation mark">!</span> <span
+                            aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span
+                            aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
+                        </p>
+                        <br/>
+                        <label htmlFor="confirm_pwd">
+                            Potwierdź hasło:
+                            <FontAwesomeIcon icon={faCheck} className={validMatch && matchPwd ? "valid" : "hide"}/>
+                            <FontAwesomeIcon icon={faTimes} className={validMatch || !matchPwd ? "hide" : "invalid"}/>
+                        </label>
+                        <br/>
+                        <input
+                            type="password"
+                            id="confirm_pwd"
+                            onChange={(e) => setMatchPwd(e.target.value)}
+                            value={matchPwd}
+                            required
+                            aria-invalid={validMatch ? "false" : "true"}
+                            aria-describedby="confirmnote"
+                            onFocus={() => setMatchFocus(true)}
+                            onBlur={() => setMatchFocus(false)}
+                        />
+                        <p id="confirmnote" className={matchFocus && !validMatch ? "instructions" : "offscreen"}>
+                            <FontAwesomeIcon icon={faInfoCircle}/>
+                            Powtórzone hasło musi pasować do pierwszego.
+                        </p>
+
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseUser}>Zamknij</Button>
+                <Button disabled={!validPwd || !validMatch ? true : false} variant="primary" onClick={submitPwd}>Zmień hasło</Button>
+            </Modal.Footer>
+        </Modal>
+    }
+
     return (<div>
         {getNavbar()}
         {isRead ? getApartmentInfo() : <div/>}
         {isRead ? getIssues() : <div/>}
         {isRead ? getNews() : <div/>}
         {isRead ? getBills() : <div/>}
+        {isRead ? userPanel() : <div/>}
     </div>)
 }
 
