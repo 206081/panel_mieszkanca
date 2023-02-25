@@ -87,7 +87,7 @@ const Dashboard = () => {
     function getNavbar() {
         return <Navbar style={{top: 0, position: "sticky"}} bg="primary" variant="dark" fixed="top">
             <Container>
-                <Navbar.Brand href="#home">Panel Mieszkańca</Navbar.Brand>
+                <Navbar.Brand href="#home" onClick={getWhole}>Panel Mieszkańca</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
@@ -96,7 +96,7 @@ const Dashboard = () => {
                                                              options={wholeData}
                                                              onChange={handleHousing}/>) : <div/>}
                         {wholeData?.length ? (<DropdownLocal key={"apartment"}
-                                                             label={"Mieszkanie: \r\n"+ wholeData[housing].data[apartment].name}
+                                                             label={"Mieszkanie: \r\n" + wholeData[housing].data[apartment].name}
                                                              options={wholeData[housing].data}
                                                              onChange={handleApartment}/>) : <div/>}
                     </Nav>
@@ -292,7 +292,8 @@ const Dashboard = () => {
             <Card.Header>Aktualne opłaty za lokal</Card.Header>
             <Card.Body>
                 {rents.map(option => <Card.Text key={"bill" + option.id}>
-                    {option.bill_type.padStart(20, ' ')} - {option.amount}{option.unit} Koszt {option.cost}zł
+                    {option.bill_type.padStart(20, ' ')} - {option.amount}{option.unit} Cena
+                    jednostkowa {option.unit_cost}zł/{option.unit} Koszt {option.cost}zł
                 </Card.Text>)}
 
                 <Card.Text>Całość: {Math.round(amount * 100) / 100}zł</Card.Text>

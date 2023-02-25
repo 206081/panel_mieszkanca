@@ -115,14 +115,14 @@ class Apartment(models.Model):
 
 
 class Bill(models.Model):
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, default=0)
     start_date = models.DateField()
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     end_date = models.DateField(default=timezone.now)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
     is_balanced = models.BooleanField(default=False)
     bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True)
-    _prediction_bills = ["Woda ciepła", "Woda zimna i ścieki", "Ścieki"]
+    _prediction_bills = ["Woda ciepła", "Woda zimna i ścieki"]
     _occupant_bills = ["Odpady komunalne"]
     _meters = ["Eksploatacja", "Centralne ogrzewanie", "Fundusz remontowy"]
 
@@ -132,18 +132,15 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if self.bill_type.name in self._prediction_bills:
             self.price = round(self.apartment.predictions * self.bill_type.price, 2)
-            print("prediction")
+            self.amount = self.apartment.predictions
         elif self.bill_type.name in self._occupant_bills:
-            print("occupant")
             self.price = round(self.apartment.occupant * self.bill_type.price, 2)
+            self.amount = self.apartment.occupant
         elif self.bill_type.name in self._meters:
-            print("area")
             self.price = round(Decimal(self.apartment.area) * self.bill_type.price, 2)
+            self.amount = self.apartment.area
         else:
-            print("bill else")
             self.price = round(self.bill_type.price * self.amount, 2)
-        print(self.price)
-        print(self.apartment.balance)
 
         if not self.is_balanced:
             self.apartment.balance -= self.price
@@ -155,11 +152,11 @@ class Bill(models.Model):
         return {
             "id": self.pk,
             "amount": self.amount,
-            "cost": round(self.bill_type.price * self.amount, 2),
-            "unit_cost": self.bill_type.price,
-            "unit": self.bill_type.unit,
+            "cost": self.price,
             "period": f"{self.start_date} - {self.end_date}",
             "is_balanced": self.is_balanced,
+            "unit_cost": self.bill_type.price,
+            "unit": self.bill_type.unit,
             "bill_type": self.bill_type.name,
         }
 

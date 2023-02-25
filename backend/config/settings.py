@@ -222,7 +222,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(weeks=1),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(weeks=52),
     "USER_ID_FIELD": "email",
     "USER_ID_CLAIM": "user_email",
