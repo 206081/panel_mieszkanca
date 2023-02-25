@@ -32,6 +32,7 @@ function App() {
                     <Route path="password_reset" element={<Password/>}/>
 
                     {/* we want to protect these routes */}
+
                     <Route element={<RequireAuth allowedRoles={[ROLES.user, ROLES.admin]}/>}>
                         <Route path="dashboard" element={<Dashboard/>}/>
                     </Route>

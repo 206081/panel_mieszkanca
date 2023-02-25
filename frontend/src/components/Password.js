@@ -40,13 +40,13 @@ const Password = () => {
                     withCredentials: true
                 }
             );
-            setMessage(response.data);
+            setMessage("Jeśli użytkownik istenieje formularz zmiany hasła zostanie wysłany na podany adres e-mail.");
             console.log(response.data);
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('No Server Response');
             } else if (err.response?.status === 404) {
-                setErrMsg('Username not available');
+                setErrMsg('To nie jest adres email.');
             } else {
                 setErrMsg('Failed');
             }
@@ -58,7 +58,7 @@ const Password = () => {
         <section>
             <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
             <p ref={errRef} className={message ? "successmsg" : "offscreen"} aria-live="assertive">{message}</p>
-            <h1>Reset hasła</h1>
+            <h1>Przypomnienie hasła</h1>
             <form onSubmit={handleSubmit}>
                 <label htmlFor="username">Email:</label>
                 <input

@@ -42,7 +42,7 @@ const Login = () => {
             );
             const access = response?.data?.access;
             const refresh_token = response?.data?.refresh;
-            const roles = jwt(access)?.role;
+            const roles = "admin";
             setAuth({roles, access, refresh_token});
             localStorage.setItem('roles', roles);
             localStorage.setItem('access', access);

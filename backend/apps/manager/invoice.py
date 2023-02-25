@@ -65,7 +65,7 @@ def create_report(user, apartment, start_date, end_date):
         "email": "admin@panel-mieszkanca.pl",
         "address": "ul. Lekko śmieszna 69/420",
     }
-    provider = Provider("Panel mieszkanca", bank_account="'numer konta administracji'", bank_code="2137", **provider)
+    provider = Provider("Panel mieszkanca", bank_account=apartment.account, bank_code="", **provider)
     creator = Creator("Administrator")
 
     invoice = Invoice(client, provider, creator)

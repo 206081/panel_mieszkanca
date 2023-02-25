@@ -1,3 +1,4 @@
+import random
 from decimal import Decimal
 
 from django.conf import settings
@@ -31,7 +32,14 @@ class IssueType(models.Model):
         return self.name
 
 
+class IssueFilter:
+    pass
+
+
 class Issue(models.Model):
+    list_display = ("issue_type", "user")
+    search_fields = ("issue_status",)
+
     issue_type = models.ForeignKey(IssueType, on_delete=models.PROTECT, null=True, related_name="issue_type")
     issue_status = models.ForeignKey(
         IssueStatus,
@@ -48,6 +56,7 @@ class Issue(models.Model):
         null=True,
     )
     description = models.TextField(default="")
+    summary = models.TextField(default="")
 
     def __str__(self):
         return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
@@ -73,6 +82,10 @@ class HousingBill(models.Model):
     housing = models.ForeignKey(HousingAssociation, on_delete=models.PROTECT, null=True)
 
 
+def _account():
+    return round(random.random() * 10**26)
+
+
 class Apartment(models.Model):
     address = models.CharField(verbose_name="ApartmentAddress", max_length=100, unique=True)
     housing = models.ForeignKey(HousingAssociation, on_delete=models.PROTECT)
@@ -83,6 +96,7 @@ class Apartment(models.Model):
     occupant = models.IntegerField(default=0)
     interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     predictions = models.DecimalField(max_digits=4, decimal_places=0, default=0)
+    account = models.DecimalField(max_digits=26, decimal_places=0, default=_account)
 
     def __str__(self):
         return f"{self.address}"

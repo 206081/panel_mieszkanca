@@ -88,8 +88,6 @@ const Dashboard = () => {
         return <Navbar style={{top: 0, position: "sticky"}} bg="primary" variant="dark" fixed="top">
             <Container>
                 <Navbar.Brand href="#home">Panel Mieszkańca</Navbar.Brand>
-            </Container>
-            <Container>
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
@@ -397,7 +395,7 @@ const Dashboard = () => {
             const response = await axiosPrivate.post('/api/users/password_change/', {
                 "password": password, signal: controller.signal
             });
-            handleCloseBill();
+            handleCloseUser();
             console.log("submitPwdResponse", response.data);
             getWhole(new AbortController(), true);
         } catch (err) {
@@ -548,7 +546,7 @@ const Dashboard = () => {
         console.log("Issues", options);
         console.log("issuesData", issuesData);
         return (<Card>
-            <Card.Header>Issues</Card.Header>
+            <Card.Header>Zgłoszenia usterek</Card.Header>
             {options.map((option, i) => <Card.Body key={option.type + i}>
                 <Card.Text key={option.type}>Typ usterki: {option.type}</Card.Text>
                 <Card.Text key={option.description}>Opis usterki: {option.description}</Card.Text>
