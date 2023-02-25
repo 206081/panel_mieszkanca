@@ -175,13 +175,13 @@ class IssuesListSerializer(serializers.ModelSerializer):
 
     def get_all(self):
         return [
-            {"type": issue.issue_type.name, "status": issue.issue_status.name, "description": issue.description}
+            {"type": issue.issue_type.name, "status": issue.issue_status.name, "description": issue.description, "summary":issue.summary}
             for issue in Issue.objects.filter(user=self.validated_data["user"])
         ]
 
     class Meta:
         model = Issue
-        fields = ("id", "issue_status", "issue_type", "description", "user")
+        fields = ("id", "issue_status", "issue_type", "description", "user", "summary")
 
 
 class ReportSerializer(serializers.Serializer):
