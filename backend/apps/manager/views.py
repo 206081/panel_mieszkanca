@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import FileResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,8 +7,8 @@ from rest_framework.viewsets import ViewSet
 
 from apps.manager.models import Apartment, Bill, HousingAssociation
 from apps.manager.serializers import (ApartmentListSerializer, BillSerializer, HousingAssociationCreateSerializer,
-                                      HousingAssociationListSerializer, IssuesSerializer, WholeInfoSerializer,
-                                      IssuesListSerializer)
+                                      HousingAssociationListSerializer, IssuesListSerializer, IssuesSerializer,
+                                      ReportSerializer, WholeInfoSerializer)
 
 
 class HousingAssociationViewSet(ViewSet):
@@ -68,6 +69,19 @@ class ApartmentViewSet(ViewSet):
                 "data": serializer.get_all_apartments(),
             },
         )
+
+    @action(methods=["POST"], detail=True)
+    def report(self, request, pk):
+        modified_data = request.data.copy()
+
+        modified_data["apartment"] = pk
+        print(modified_data)
+        serializer = ReportSerializer(data=modified_data, context={"request": self.request})
+        print("is good2")
+        serializer.is_valid(raise_exception=True)
+        print("is good3")
+
+        return FileResponse(serializer.get_file(), as_attachment=True)
 
 
 class BillViewSet(ViewSet):

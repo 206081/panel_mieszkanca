@@ -14,6 +14,8 @@ import Form from 'react-bootstrap/Form';
 import {ListGroup} from "react-bootstrap";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheck, faInfoCircle, faTimes} from "@fortawesome/free-solid-svg-icons";
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
 
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
@@ -44,9 +46,17 @@ const Dashboard = () => {
     const [issueText, setIssueText] = useState(1);
     const [issueType, setIssueType] = useState(1);
 
+    const start_date = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+    const end_date = new Date(Date.now());
+    const [startDate, setStartDate] = useState(start_date);
+    const [startDateText, setStartDateText] = useState([(start_date.getMonth() + 1), start_date.getFullYear() - 1].join("-").padStart(7, '0'));
+    const [endDate, setEndDate] = useState(end_date);
+    const [endDateText, setEndDateText] = useState([(end_date.getMonth() + 1), end_date.getFullYear()].join("-").padStart(7, '0'));
+
     const [billShow, setBillShow] = useState(false);
     const [issueShow, setIssueShow] = useState(false);
     const [userShow, setUserShow] = useState(false);
+    const [reportShow, setReportShow] = useState(false);
 
     const handleCloseBill = () => setBillShow(false);
     const handleShowBill = () => setBillShow(true);
@@ -54,6 +64,8 @@ const Dashboard = () => {
     const handleShowIssue = () => setIssueShow(true);
     const handleCloseUser = () => setUserShow(false);
     const handleShowUser = () => setUserShow(true);
+    const handleCloseReport = () => setReportShow(false);
+    const handleShowReport = () => setReportShow(true);
 
     const logout = async () => {
         setAuth({});
@@ -76,30 +88,36 @@ const Dashboard = () => {
         return <Navbar style={{top: 0, position: "sticky"}} bg="primary" variant="dark" fixed="top">
             <Container>
                 <Navbar.Brand href="#home">Panel Mieszkańca</Navbar.Brand>
+            </Container>
+            <Container>
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
                         {wholeData?.length ? (<DropdownLocal key={"housing"}
-                                                             label={"Spółdzielnia: " + wholeData[housing].name}
+                                                             label={"Spółdzielnia: \n" + wholeData[housing].name}
                                                              options={wholeData}
                                                              onChange={handleHousing}/>) : <div/>}
                         {wholeData?.length ? (<DropdownLocal key={"apartment"}
-                                                             label={"Mieszkanie: " + wholeData[housing].data[apartment].name}
+                                                             label={"Mieszkanie: \r\n"+ wholeData[housing].data[apartment].name}
                                                              options={wholeData[housing].data}
                                                              onChange={handleApartment}/>) : <div/>}
                     </Nav>
                     {/*<Button onClick={handleShowBill}>Dodaj rachunek</Button>*/}
+                    {/*{getBillModal()}*/}
+
                     <Button onClick={handleShowIssue}>Dodaj usterkę</Button>
-                    <Button onClick={handleShowUser}>Panel użytkownika</Button>
-                    <Button onClick={handleShowUser}>Raporty</Button>
-                    <Button onClick={logout}>Wyloguj</Button>
-                    {getBillModal()}
                     {getIssueModal()}
+
+                    <Button onClick={handleShowUser}>Panel użytkownika</Button>
+
+                    <Button onClick={handleShowReport}>Raporty</Button>
+                    {getMonthReportModal()}
+
+                    <Button onClick={logout}>Wyloguj</Button>
                 </Navbar.Collapse>
             </Container>
         </Navbar>;
     }
-
 
     // Whole data
     const handleHousing = (event) => {
@@ -202,9 +220,9 @@ const Dashboard = () => {
     };
 
     function getNews() {
-        return <News options={wholeData[housing].data[apartment].news}/>;
+        let news = wholeData[housing].data[apartment].news;
+        return news.length ? <News options={news}/> : <div/>;
     }
-
 
     // Bills
     const submitBill = async () => {
@@ -218,6 +236,32 @@ const Dashboard = () => {
             getWhole(new AbortController(), true);
         } catch (err) {
             navigate('/login', {state: {from: location}, replace: true});
+        }
+        return () => {
+            controller.abort();
+        }
+    }
+    const submitReport = async () => {
+        const controller = new AbortController();
+        try {
+            const response = await axiosPrivate.post('/api/apartments/' + wholeData[housing].data[apartment].id + '/report/', {
+                "start_date": startDateText,
+                "end_date": endDateText,
+                signal: controller.signal
+            }).then((response) => {
+                console.log(response)
+                const url = window.URL.createObjectURL(new Blob([response.data]))
+                const link = document.createElement('a')
+                const title = ["report", startDateText, endDateText].join("_")
+                link.href = url
+                link.setAttribute('download', title + '.pdf')
+                document.body.appendChild(link)
+                link.click()
+            });
+            handleCloseReport();
+            console.log("SubmitReportResponse", response.data);
+        } catch (err) {
+
         }
         return () => {
             controller.abort();
@@ -249,14 +293,56 @@ const Dashboard = () => {
         return (<Card>
             <Card.Header>Aktualne opłaty za lokal</Card.Header>
             <Card.Body>
-                {rents.map(option =>
-                    <Card.Text key={"bill" + option.id}>
-                        {option.bill_type.padStart(20, ' ')} - {option.amount}{option.unit} Koszt {option.cost}zł
-                    </Card.Text>)}
+                {rents.map(option => <Card.Text key={"bill" + option.id}>
+                    {option.bill_type.padStart(20, ' ')} - {option.amount}{option.unit} Koszt {option.cost}zł
+                </Card.Text>)}
 
                 <Card.Text>Całość: {Math.round(amount * 100) / 100}zł</Card.Text>
             </Card.Body>
         </Card>)
+    }
+
+    function getMonthReportModal() {
+        return (<Modal show={reportShow} onHide={handleCloseReport}>
+            <Modal.Header closeButton>
+                <Modal.Title>Pobierz raport</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Form.Group>
+                        <Form.Label htmlFor="input_bill_amount">Początek zakresu</Form.Label>
+                        <DatePicker
+                            selected={startDate}
+                            onChange={e => {
+                                console.log("setStartDate:", e);
+                                console.log("setStartDateText:", [(e.getMonth() + 1), e.getFullYear()].join("-").padStart(7, '0'));
+                                setStartDate(e);
+                                setStartDateText([(e.getMonth() + 1), e.getFullYear()].join("-").padStart(7, '0'));
+                            }}
+                            dateFormat="MM/yyyy"
+                            showMonthYearPicker
+                        />
+                        <Form.Label htmlFor="input_bill_amount">Koniec zakresu</Form.Label>
+
+                        <DatePicker
+                            selected={endDate}
+                            onChange={e => {
+                                console.log("setEndDate:", e);
+                                console.log("setEndDateText:", [(e.getMonth() + 1), e.getFullYear()].join("-").padStart(7, '0'));
+                                setEndDate(e);
+                                setEndDateText([(e.getMonth() + 1), e.getFullYear()].join("-").padStart(7, '0'));
+                            }}
+                            dateFormat="MM/yyyy"
+                            showMonthYearPicker
+                        />
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseReport}>Zamknij</Button>
+                <Button variant="primary" onClick={submitReport}>Generuj</Button>
+            </Modal.Footer>
+        </Modal>)
     }
 
     function getBillModal() {
@@ -464,7 +550,7 @@ const Dashboard = () => {
         return (<Card>
             <Card.Header>Issues</Card.Header>
             {options.map((option, i) => <Card.Body key={option.type + i}>
-                <Card.Text key={option.type}>Typ uster:{option.type}</Card.Text>
+                <Card.Text key={option.type}>Typ usterki: {option.type}</Card.Text>
                 <Card.Text key={option.description}>Opis usterki: {option.description}</Card.Text>
                 <Card.Text key={option.status}>Status: {option.status}</Card.Text>
             </Card.Body>)}
@@ -479,10 +565,10 @@ const Dashboard = () => {
     return (<div>
         {getNavbar()}
         {isRead ? getApartmentInfo() : <div/>}
-        {isRead ? getIssues() : <div/>}
-        {isRead ? getNews() : <div/>}
-        {/*{isRead ? getBills() : <div/>}*/}
         {isRead ? getRents() : <div/>}
+        {isRead ? getNews() : <div/>}
+        {isRead ? getIssues() : <div/>}
+        {/*{isRead ? getBills() : <div/>}*/}
         {isRead ? userPanel() : <div/>}
     </div>)
 }

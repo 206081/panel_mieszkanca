@@ -1,6 +1,6 @@
 from rest_framework_nested import routers
 
-from apps.manager.views import ApartmentViewSet, BillViewSet, HousingAssociationViewSet, WholeInfoViewSet, IssueViewSet
+from apps.manager.views import ApartmentViewSet, BillViewSet, HousingAssociationViewSet, IssueViewSet, WholeInfoViewSet
 from apps.users.views import UserViewSet
 
 # Settings

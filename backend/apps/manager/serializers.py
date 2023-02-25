@@ -5,7 +5,8 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.manager.models import Apartment, Bill, BillType, HousingAssociation, Issue, IssueType, News
+from apps.manager.invoice import create_report
+from apps.manager.models import Apartment, Bill, BillType, Files, HousingAssociation, Issue, IssueType, News
 
 
 class HousingAssociationCreateSerializer(serializers.ModelSerializer):
@@ -181,3 +182,25 @@ class IssuesListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ("id", "issue_status", "issue_type", "description", "user")
+
+
+class ReportSerializer(serializers.Serializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    apartment = serializers.IntegerField(required=False)
+    start_date = serializers.DateField(input_formats=["%m-%Y"])
+    end_date = serializers.DateField(input_formats=["%m-%Y"])
+
+    def get_file(self):
+        print("validated", self.validated_data)
+        print("validated", self.validated_data)
+        return open(
+            create_report(
+                self.validated_data["user"],
+                Apartment.objects.get(id=self.validated_data["apartment"]),
+                self.validated_data["start_date"],
+                self.validated_data["end_date"],
+            ), "rb"
+        )
+
+    class Meta:
+        fields = ("user", "apartment", "start_date", "end_date")

@@ -152,6 +152,7 @@ class Bill(models.Model):
 class Income(models.Model):
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(default=timezone.now)
 
     def __str__(self):
         return f"{self.apartment.address} - {self.amount} zł"
@@ -179,3 +180,10 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = "News"
+
+
+class Files(models.Model):
+    pdf = models.FileField(upload_to="store/pdfs/")
+
+    def __str__(self):
+        return self.pdf
