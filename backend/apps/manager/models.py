@@ -53,12 +53,6 @@ class Issue(models.Model):
         return f"{self.issue_type.name} - {self.issue_status.name} - {self.user}"
 
 
-class HousingBill(models.Model):
-    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True)
-    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-
 class HousingAssociation(models.Model):
     name = models.CharField(verbose_name="HousingName", max_length=254, unique=True)
 
@@ -70,6 +64,13 @@ class HousingAssociation(models.Model):
             "id": self.pk,
             "name": self.name,
         }
+
+
+class HousingBill(models.Model):
+    bill_type = models.ForeignKey(BillType, on_delete=models.PROTECT, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    housing = models.ForeignKey(HousingAssociation, on_delete=models.PROTECT, null=True)
 
 
 class Apartment(models.Model):
